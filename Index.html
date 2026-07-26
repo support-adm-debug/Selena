@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Space Survivor</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#02030b;
+    color:white;
+}
+
+body{
+    touch-action:none;
+    user-select:none;
+}
+
+#game{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    background:radial-gradient(circle at 50% 50%,#111b38 0%,#03040d 55%,#010106 100%);
+}
+
+.stars,.stars::before,.stars::after{
+    position:absolute;
+    inset:0;
+    content:"";
+    pointer-events:none;
+}
+
+.stars{
+    opacity:.85;
+    background-image:
+        radial-gradient(circle,white 1px,transparent 1.5px),
+        radial-gradient(circle,#8ca9ff 1px,transparent 1.5px),
+        radial-gradient(circle,white 1px,transparent 1.5px);
+    background-size:90px 110px,170px 190px,260px 240px;
+    background-position:0 0,50px 80px,130px 30px;
+    animation:starsMove 25s linear infinite;
+}
+
+.stars::before{
+    opacity:.45;
+    background-image:
+        radial-gradient(circle,white 1px,transparent 1.5px),
+        radial-gradient(circle,#6f8dff 1px,transparent 1.5px);
+    background-size:130px 160px,220px 260px;
+    animation:starsMove 14s linear infinite;
+}
+
+.stars::after{
+    opacity:.3;
+    background-image:radial-gradient(circle,white 1px,transparent 1.5px);
+    background-size:320px 330px;
+    animation:starsMove 35s linear infinite;
+}
+
+@keyframes starsMove{
+    from{background-position-y:0,80px,30px}
+    to{background-position-y:1000px,1080px,1030px}
+}
+
+.screen{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    z-index:20;
+    transition:.35s;
+}
+
+.hidden{
+    display:none!important;
+}
+
+.logo{
+    font-size:clamp(35px,9vw,70px);
+    font-weight:900;
+    letter-spacing:5px;
+    text-align:center;
+    color:white;
+    text-shadow:0 0 10px #6288ff,0 0 25px #3e64ff,0 0 50px #243dff;
+    margin-bottom:25px;
+}
+
+.subtitle{
+    color:#aab7df;
+    margin-bottom:35px;
+    font-size:15px;
+    text-align:center;
+}
+
+button{
+    border:none;
+    cursor:pointer;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    padding:17px 48px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#557bff,#783dff);
+    box-shadow:0 0 20px rgba(84,116,255,.5),inset 0 1px 1px rgba(255,255,255,.4);
+    transition:.2s;
+}
+
+button:active{
+    transform:scale(.94);
+}
+
+.high-score{
+    margin-top:35px;
+    padding:13px 25px;
+    border-radius:14px;
+    background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.12);
+    color:#dfe6ff;
+    font-size:14px;
+}
+
+.high-score strong{
+    color:#7f9dff;
+    font-size:19px;
+}
+
+#hud{
+    position:absolute;
+    top:15px;
+    left:15px;
+    right:15px;
+    z-index:10;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    pointer-events:none;
+}
+
+.hud-box{
+    padding:9px 13px;
+    border-radius:12px;
+    background:rgba(4,7,25,.65);
+    border:1px solid rgba(145,164,255,.22);
+    backdrop-filter:blur(8px);
+    font-size:13px;
+    color:#b8c5ef;
+}
+
+.hud-box strong{
+    color:white;
+    font-size:17px;
+}
+
+#hearts{
+    font-size:22px;
+    letter-spacing:3px;
+    filter:drop-shadow(0 0 5px #ff3d5e);
+}
+
+#player{
+    position:absolute;
+    width:65px;
+    height:78px;
+    bottom:45px;
+    left:0;
+    transform:translateX(-50%);
+    z-index:5;
+    font-size:55px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    filter:drop-shadow(0 0 8px #5d8dff) drop-shadow(0 0 18px #3e5eff);
+    will-change:left;
+}
+
+#player::after{
+    content:"";
+    position:absolute;
+    bottom:-20px;
+    width:17px;
+    height:35px;
+    border-radius:50%;
+    background:linear-gradient(#fff,#63a7ff,transparent);
+    filter:blur(3px);
+    animation:engine .12s infinite alternate;
+}
+
+@keyframes engine{
+    from{height:25px;opacity:.7}
+    to{height:42px;opacity:1}
+}
+
+.bullet{
+    position:absolute;
+    width:5px;
+    height:21px;
+    border-radius:10px;
+    background:#dff6ff;
+    box-shadow:0 0 6px #fff,0 0 15px #5ed5ff,0 0 25px #319bff;
+    z-index:3;
+    will-change:transform;
+}
+
+.meteor{
+    position:absolute;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:45px;
+    z-index:4;
+    filter:drop-shadow(0 0 8px #ff633d);
+    will-change:transform;
+}
+
+.meteor-health{
+    position:absolute;
+    top:-9px;
+    left:5px;
+    right:5px;
+    height:5px;
+    border-radius:10px;
+    background:rgba(0,0,0,.7);
+    overflow:hidden;
+}
+
+.meteor-health-bar{
+    width:100%;
+    height:100%;
+    background:linear-gradient(90deg,#ff344e,#ffb13b);
+    transition:.1s;
+}
+
+.explosion{
+    position:absolute;
+    z-index:8;
+    font-size:42px;
+    pointer-events:none;
+    animation:explode .45s forwards;
+}
+
+@keyframes explode{
+    0%{transform:scale(.4);opacity:1}
+    100%{transform:scale(2.4);opacity:0}
+}
+
+#game-over{
+    background:rgba(0,0,8,.72);
+    backdrop-filter:blur(8px);
+    z-index:30;
+    text-align:center;
+}
+
+.game-over-title{
+    font-size:clamp(32px,8vw,58px);
+    font-weight:900;
+    color:#ff526d;
+    text-shadow:0 0 15px #ff263f,0 0 35px #a8001c;
+    margin-bottom:22px;
+}
+
+.final-score{
+    font-size:20px;
+    color:#e2e6ff;
+    line-height:1.8;
+    margin-bottom:30px;
+}
+
+.final-score strong{
+    color:#8ea7ff;
+    font-size:28px;
+}
+
+.game-buttons{
+    display:flex;
+    gap:13px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+.game-buttons button:last-child{
+    background:rgba(255,255,255,.1);
+    box-shadow:none;
+    border:1px solid rgba(255,255,255,.18);
+}
+
+#touch-hint{
+    position:absolute;
+    bottom:13px;
+    left:0;
+    right:0;
+    text-align:center;
+    color:rgba(255,255,255,.35);
+    font-size:11px;
+    z-index:2;
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <div class="stars"></div>
+
+    <section id="start-screen" class="screen">
+        <div class="logo">SPACE SURVIVOR</div>
+
+        <div class="subtitle">
+            Sobreviva o máximo de tempo possível
+        </div>
+
+        <button id="play-button">
+            🚀 Jogar
+        </button>
+
+        <div class="high-score">
+            Maior Recorde:
+            <strong id="start-high-score">00:00</strong>
+        </div>
+    </section>
+
+    <div id="hud" class="hidden">
+
+        <div class="hud-box">
+            ⏱️ Recorde:
+            <strong id="current-score">00:00</strong>
+
+            <br>
+
+            🏆 Maior:
+            <strong id="game-high-score">00:00</strong>
+        </div>
+
+        <div id="hearts">
+            ❤️❤️❤️
+        </div>
+
+    </div>
+
+    <div id="player" class="hidden">
+        🚀
+    </div>
+
+    <div id="touch-hint" class="hidden">
+        Deslize o dedo para mover a nave
+    </div>
+
+    <section id="game-over" class="screen hidden">
+
+        <div class="game-over-title">
+            VOCÊ FOI ELIMINADO
+        </div>
+
+        <div class="final-score">
+
+            Recorde desta partida:
+
+            <br>
+
+            <strong id="final-score">00:00</strong>
+
+            <br><br>
+
+            Maior Recorde:
+
+            <br>
+
+            <strong id="final-high-score">00:00</strong>
+
+        </div>
+
+        <div class="game-buttons">
+
+            <button id="restart-button">
+                🔄 Jogar novamente
+            </button>
+
+            <button id="exit-button">
+                🚪 Sair
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
+
+<script>
+
+const game = document.getElementById("game");
+const startScreen = document.getElementById("start-screen");
+const gameOverScreen = document.getElementById("game-over");
+const player = document.getElementById("player");
+const hud = document.getElementById("hud");
+const touchHint = document.getElementById("touch-hint");
+const currentScoreText = document.getElementById("current-score");
+const startHighScoreText = document.getElementById("start-high-score");
+const gameHighScoreText = document.getElementById("game-high-score");
+const finalScoreText = document.getElementById("final-score");
+const finalHighScoreText = document.getElementById("final-high-score");
+const heartsText = document.getElementById("hearts");
+const playButton = document.getElementById("play-button");
+const restartButton = document.getElementById("restart-button");
+const exitButton = document.getElementById("exit-button");
+
+let playing = false;
+let hearts = 3;
+let startTime = 0;
+let score = 0;
+let highScore = Number(localStorage.getItem("spaceHighScore")) || 0;
+
+let bullets = [];
+let meteors = [];
+
+let animationFrame;
+
+let lastFrameTime = 0;
+let lastBulletTime = 0;
+let lastMeteorTime = 0;
+let lastScoreTime = 0;
+
+let playerX = window.innerWidth / 2;
+let targetX = window.innerWidth / 2;
+
+const movementSmoothness = 0.16;
+
+function formatTime(seconds){
+
+    seconds = Math.floor(seconds);
+
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+
+    return String(minutes).padStart(2,"0") + ":" +
+           String(secs).padStart(2,"0");
+}
+
+function updateHighScore(){
+
+    startHighScoreText.textContent = formatTime(highScore);
+    gameHighScoreText.textContent = formatTime(highScore);
+    finalHighScoreText.textContent = formatTime(highScore);
+
+}
+
+updateHighScore();
+
+function startGame(){
+
+    playing = true;
+
+    hearts = 3;
+    score = 0;
+
+    startTime = performance.now();
+
+    lastFrameTime = performance.now();
+    lastBulletTime = 0;
+    lastMeteorTime = 0;
+    lastScoreTime = 0;
+
+    playerX = window.innerWidth / 2;
+    targetX = window.innerWidth / 2;
+
+    clearObjects();
+
+    startScreen.classList.add("hidden");
+    gameOverScreen.classList.add("hidden");
+
+    hud.classList.remove("hidden");
+    player.classList.remove("hidden");
+    touchHint.classList.remove("hidden");
+
+    updateHearts();
+    updatePlayer();
+
+    currentScoreText.textContent = "00:00";
+
+    animationFrame = requestAnimationFrame(gameLoop);
+}
+
+function updatePlayer(){
+
+    const half = player.offsetWidth / 2;
+
+    targetX = Math.max(
+        half,
+        Math.min(
+            window.innerWidth - half,
+            targetX
+        )
+    );
+
+    playerX += (targetX - playerX) * movementSmoothness;
+
+    player.style.left = playerX + "px";
+}
+
+function gameLoop(currentTime){
+
+    if(!playing) return;
+
+    const deltaTime = Math.min(
+        currentTime - lastFrameTime,
+        50
+    );
+
+    lastFrameTime = currentTime;
+
+    const elapsedSeconds =
+        (currentTime - startTime) / 1000;
+
+    score = elapsedSeconds;
+
+    updatePlayer();
+
+    if(currentTime - lastScoreTime > 100){
+
+        currentScoreText.textContent =
+            formatTime(score);
+
+        lastScoreTime = currentTime;
+    }
+
+    if(currentTime - lastBulletTime > 260){
+
+        shoot();
+
+        lastBulletTime = currentTime;
+    }
+
+    const meteorInterval = Math.max(
+        250,
+        900 - elapsedSeconds * 7
+    );
+
+    if(currentTime - lastMeteorTime > meteorInterval){
+
+        createMeteor();
+
+        lastMeteorTime = currentTime;
+    }
+
+    moveBullets(deltaTime);
+    moveMeteors(deltaTime, elapsedSeconds);
+    checkCollisions();
+
+    animationFrame = requestAnimationFrame(gameLoop);
+}
+
+function shoot(){
+
+    if(!playing) return;
+
+    const bullet = document.createElement("div");
+
+    bullet.className = "bullet";
+
+    const rect = player.getBoundingClientRect();
+
+    const x = rect.left + rect.width / 2;
+    const y = rect.top - 15;
+
+    bullet.style.left = (x - 2.5) + "px";
+    bullet.style.top = y + "px";
+
+    game.appendChild(bullet);
+
+    bullets.push({
+        element: bullet,
+        x: x,
+        y: y
+    });
+}
+
+function createMeteor(){
+
+    if(!playing) return;
+
+    const size = 42 + Math.random() * 27;
+
+    const meteor = document.createElement("div");
+
+    meteor.className = "meteor";
+
+    meteor.style.width = size + "px";
+    meteor.style.height = size + "px";
+
+    meteor.innerHTML = `
+        <div class="meteor-health">
+            <div class="meteor-health-bar"></div>
+        </div>
+        ☄️
+    `;
+
+    const x = Math.random() *
+        (window.innerWidth - size);
+
+    /*
+        METEOROS MAIS RESISTENTES
+
+        Antes: aproximadamente 3 a 6 tiros.
+
+        Agora:
+        - começam com 8 de vida
+        - ganham vida lentamente conforme o tempo passa
+        - a nave precisa acertar muito mais tiros
+    */
+
+    const health = Math.floor(
+        8 + score / 20
+    );
+
+    game.appendChild(meteor);
+
+    meteors.push({
+
+        element: meteor,
+
+        x: x,
+
+        y: -size,
+
+        size: size,
+
+        health: health,
+
+        maxHealth: health,
+
+        speed: 130 + Math.random() * 100
+
+    });
+}
+
+function moveBullets(deltaTime){
+
+    const seconds = deltaTime / 1000;
+
+    for(let i = bullets.length - 1; i >= 0; i--){
+
+        const bullet = bullets[i];
+
+        bullet.y -= 650 * seconds;
+
+        bullet.element.style.top =
+            bullet.y + "px";
+
+        if(bullet.y < -30){
+
+            bullet.element.remove();
+
+            bullets.splice(i,1);
+        }
+    }
+}
+
+function moveMeteors(deltaTime, elapsedSeconds){
+
+    const seconds = deltaTime / 1000;
+
+    /*
+        VELOCIDADE PROGRESSIVA
+
+        A velocidade cresce continuamente,
+        mas de forma controlada.
+
+        Isso mantém o jogo desafiador
+        sem deixar os meteoros absurdamente rápidos.
+    */
+
+    const speedMultiplier =
+        1 + elapsedSeconds * 0.035;
+
+    for(let i = meteors.length - 1; i >= 0; i--){
+
+        const meteor = meteors[i];
+
+        const speed =
+            meteor.speed * speedMultiplier;
+
+        meteor.y += speed * seconds;
+
+        meteor.element.style.left =
+            meteor.x + "px";
+
+        meteor.element.style.top =
+            meteor.y + "px";
+
+        if(meteor.y > window.innerHeight + 100){
+
+            meteor.element.remove();
+
+            meteors.splice(i,1);
+        }
+    }
+}
+
+function checkCollisions(){
+
+    const playerRect =
+        player.getBoundingClientRect();
+
+    for(let m = meteors.length - 1; m >= 0; m--){
+
+        const meteor = meteors[m];
+
+        const meteorRect =
+            meteor.element.getBoundingClientRect();
+
+        if(isColliding(playerRect, meteorRect)){
+
+            damagePlayer();
+
+            createExplosion(
+                meteor.x,
+                meteor.y
+            );
+
+            meteor.element.remove();
+
+            meteors.splice(m,1);
+
+            continue;
+        }
+
+        for(let b = bullets.length - 1; b >= 0; b--){
+
+            const bullet = bullets[b];
+
+            const bulletRect =
+                bullet.element.getBoundingClientRect();
+
+            if(isColliding(bulletRect, meteorRect)){
+
+                meteor.health--;
+
+                bullet.element.remove();
+
+                bullets.splice(b,1);
+
+                const healthBar =
+                    meteor.element.querySelector(
+                        ".meteor-health-bar"
+                    );
+
+                healthBar.style.width =
+                    (meteor.health / meteor.maxHealth * 100)
+                    + "%";
+
+                if(meteor.health <= 0){
+
+                    createExplosion(
+                        meteor.x,
+                        meteor.y
+                    );
+
+                    meteor.element.remove();
+
+                    meteors.splice(m,1);
+                }
+
+                break;
+            }
+        }
+    }
+}
+
+function isColliding(a,b){
+
+    return (
+        a.left < b.right &&
+        a.right > b.left &&
+        a.top < b.bottom &&
+        a.bottom > b.top
+    );
+}
+
+function damagePlayer(){
+
+    hearts--;
+
+    updateHearts();
+
+    if(hearts <= 0){
+
+        endGame();
+    }
+}
+
+function updateHearts(){
+
+    heartsText.textContent =
+        "❤️".repeat(hearts) +
+        "🖤".repeat(3 - hearts);
+}
+
+function createExplosion(x,y){
+
+    const explosion =
+        document.createElement("div");
+
+    explosion.className = "explosion";
+
+    explosion.textContent = "💥";
+
+    explosion.style.left = x + "px";
+    explosion.style.top = y + "px";
+
+    game.appendChild(explosion);
+
+    setTimeout(() => {
+
+        explosion.remove();
+
+    },500);
+}
+
+function endGame(){
+
+    playing = false;
+
+    cancelAnimationFrame(animationFrame);
+
+    if(score > highScore){
+
+        highScore = Math.floor(score);
+
+        localStorage.setItem(
+            "spaceHighScore",
+            highScore
+        );
+    }
+
+    clearObjects();
+
+    hud.classList.add("hidden");
+    player.classList.add("hidden");
+    touchHint.classList.add("hidden");
+
+    finalScoreText.textContent =
+        formatTime(score);
+
+    updateHighScore();
+
+    gameOverScreen.classList.remove("hidden");
+}
+
+function clearObjects(){
+
+    bullets.forEach(
+        bullet => bullet.element.remove()
+    );
+
+    meteors.forEach(
+        meteor => meteor.element.remove()
+    );
+
+    bullets = [];
+    meteors = [];
+}
+
+playButton.addEventListener(
+    "click",
+    startGame
+);
+
+restartButton.addEventListener(
+    "click",
+    startGame
+);
+
+exitButton.addEventListener(
+    "click",
+    () => {
+
+        playing = false;
+
+        cancelAnimationFrame(animationFrame);
+
+        clearObjects();
+
+        gameOverScreen.classList.add("hidden");
+        startScreen.classList.remove("hidden");
+
+        updateHighScore();
+    }
+);
+
+let touchStartX = null;
+
+document.addEventListener(
+    "touchstart",
+    event => {
+
+        if(!playing) return;
+
+        touchStartX =
+            event.touches[0].clientX;
+    },
+    {passive:true}
+);
+
+document.addEventListener(
+    "touchmove",
+    event => {
+
+        if(!playing || touchStartX === null)
+            return;
+
+        const currentX =
+            event.touches[0].clientX;
+
+        const difference =
+            currentX - touchStartX;
+
+        targetX += difference * 1.8;
+
+        touchStartX = currentX;
+
+        const half =
+            player.offsetWidth / 2;
+
+        targetX = Math.max(
+            half,
+            Math.min(
+                window.innerWidth - half,
+                targetX
+            )
+        );
+    },
+    {passive:true}
+);
+
+document.addEventListener(
+    "touchend",
+    () => {
+
+        touchStartX = null;
+    },
+    {passive:true}
+);
+
+let mouseDown = false;
+
+document.addEventListener(
+    "mousedown",
+    () => {
+
+        if(!playing) return;
+
+        mouseDown = true;
+    }
+);
+
+document.addEventListener(
+    "mousemove",
+    event => {
+
+        if(!playing || !mouseDown)
+            return;
+
+        targetX = event.clientX;
+    }
+);
+
+document.addEventListener(
+    "mouseup",
+    () => {
+
+        mouseDown = false;
+    }
+);
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if(!playing) return;
+
+        if(event.key === "ArrowLeft")
+            targetX -= 45;
+
+        if(event.key === "ArrowRight")
+            targetX += 45;
+    }
+);
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        const half =
+            player.offsetWidth / 2;
+
+        targetX = Math.max(
+            half,
+            Math.min(
+                window.innerWidth - half,
+                targetX
+            )
+        );
+    }
+);
+
+</script>
+
+</body>
+</html>
