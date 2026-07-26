@@ -851,9 +851,9 @@ function gameLoop(currentTime){
 
     const bulletInterval = Math.max(
 
-    130,               // limite mínimo
+    90,               // limite mínimo
 
-    200 - elapsedSeconds * 0.35
+    200 - elapsedSeconds * 0.10
 
 );
 
@@ -868,7 +868,7 @@ if(currentTime - lastBulletTime > bulletInterval){
 
     const meteorInterval = Math.max(
         250,
-        900 - elapsedSeconds * 7
+        1000 - elapsedSeconds * 7
     );
 
     if(currentTime - lastMeteorTime > meteorInterval){
